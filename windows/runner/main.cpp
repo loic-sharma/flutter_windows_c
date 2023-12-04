@@ -24,7 +24,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
 
-  FlutterWindow window(project);
+  FlutterDesktopEngineProperties engine_properties{
+    /*assets_path=*/L"data\\flutter_assets",
+    /*icu_data_path=*/L"data\\icudtl.dat",
+    /*aot_library_path=*/L"data\\app.so",
+    /*dart_entrypoint=*/nullptr,
+    /*dart_entrypoint_argc=*/0,
+    /*dart_entrypoint_argv=*/nullptr,
+  };
+
+  FlutterDesktopEngineRef engine{FlutterDesktopEngineCreate(&engine_properties)};
+
+  FlutterWindow window(engine);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
   if (!window.Create(L"flutter_windows_c", origin, size)) {
