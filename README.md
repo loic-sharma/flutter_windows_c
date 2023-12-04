@@ -41,11 +41,8 @@ Here's pseudocode showing the C++ API:
 
 ```cpp
 // Create a view controller. This also creates an engine.
-auto controller = std::make_unique<flutter::FlutterViewController>(
-  width, height, project);
+flutter::DartProject project{L"data"};
+flutter::FlutterViewController controller{width, height, &project};
 
 // Run app...
-
-// Destroy the view controller. This also destroys the the engine.
-controller.reset();
 ```
