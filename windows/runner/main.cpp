@@ -1,5 +1,6 @@
-#include <flutter/dart_project.h>
-#include <flutter/flutter_view_controller.h>
+#include <flutter_windows.h>
+#include <algorithm>
+#include <iterator>
 #include <windows.h>
 
 #include "flutter_window.h"
@@ -17,20 +18,22 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   // plugins.
   ::CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-  flutter::DartProject project(L"data");
-
   std::vector<std::string> command_line_arguments =
       GetCommandLineArguments();
 
-  project.set_dart_entrypoint_arguments(std::move(command_line_arguments));
+  std::vector<const char*> entrypoint_argv;
+  std::transform(
+      command_line_arguments.begin(), command_line_arguments.end(),
+      std::back_inserter(entrypoint_argv),
+      [](const std::string& arg) -> const char* { return arg.c_str(); });
 
   FlutterDesktopEngineProperties engine_properties{
     /*assets_path=*/L"data\\flutter_assets",
     /*icu_data_path=*/L"data\\icudtl.dat",
     /*aot_library_path=*/L"data\\app.so",
     /*dart_entrypoint=*/nullptr,
-    /*dart_entrypoint_argc=*/0,
-    /*dart_entrypoint_argv=*/nullptr,
+    /*dart_entrypoint_argc=*/static_cast<int>(entrypoint_argv.size()),
+    /*dart_entrypoint_argv=*/entrypoint_argv.empty() ? nullptr : entrypoint_argv.data(),
   };
 
   FlutterDesktopEngineRef engine{FlutterDesktopEngineCreate(&engine_properties)};
