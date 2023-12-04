@@ -1,16 +1,51 @@
-# flutter_windows_c
+# Flutter Windows C API
 
-A new Flutter project.
+Flutter Windows apps interact with Flutter using a C++ API. However, this C++
+API is actually a wrapper built on top of Flutter Window's C API. This sample
+shows how to use Flutter Window's C API directly.
 
-## Getting Started
+Noteworthy files:
 
-This project is a starting point for a Flutter application.
+1. `windows/runner/main.cpp`
+2. `windows/runner/flutter_window.h`
+3. `windows/runner/flutter_window.cpp`
 
-A few resources to get you started if this is your first Flutter project:
+### Background
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+C++ does not have a stable ABI and two libraries built separately might
+not interoperate. Flutter Windows avoids this problem by exposing
+a low-level C API.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+When you build your app, the Flutter tool injects C++ source code into the app's
+`flutter/ephemeral/cpp_client_wrapper` directory. This injected code "wraps"
+Flutter Window's C API and provides nicer C++ abstractions.
+
+Here's pseudocode showing the C API:
+
+```cpp
+FlutterDesktopEngineProperties engine_properties = {};
+
+// Create the engine.
+auto engine = FlutterDesktopEngineCreate(&engine_properties);
+
+// Create a view controller. The view controller takes ownership of the engine.
+auto controller = FlutterDesktopViewControllerCreate(width, height, engine);
+
+// Run app...
+
+// Destroy the view controller. This also destroys the engine.
+FlutterDesktopViewControllerDestroy(controller);
+```
+
+Here's pseudocode showing the C++ API:
+
+```cpp
+// Create a view controller. This also creates an engine.
+auto controller = std::make_unique<flutter::FlutterViewController>(
+  width, height, project);
+
+// Run app...
+
+// Destroy the view controller. This also destroys the the engine.
+controller.reset();
+```
